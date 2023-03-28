@@ -1,3 +1,13 @@
+/**
+ * @file main.cpp
+ * @author Drew Wheeler
+ * 
+ * @brief Main driving file of the program.
+ * 
+ * @see fn.hpp fn.cpp
+ * 
+ */
+
 #include <iostream>
 #include <sstream>
 #include <string>
