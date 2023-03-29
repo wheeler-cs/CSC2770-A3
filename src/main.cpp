@@ -36,7 +36,8 @@ int main (int argc, char** argv) {
     do
     {
         operation = ' ';
-        param_1 = param_2 = "";
+        param_1 = "";
+        int lno = 0;
 
         std::cout << "edlin> ";
         std::getline (std::cin, user_input);
@@ -61,6 +62,11 @@ int main (int argc, char** argv) {
                     std::cerr << "Cannot open " << param_1 << std::endl;
                 break;
             case 'e':
+                // BUG: Causes a seg. fault. if no parameters are supplied after 'e'
+                prompt_parser >> lno;
+                prompt_parser.get (param_1[0]); // Get the left over ' ' between lno and text
+                std::getline (prompt_parser, param_1);
+                edit_line (lno, param_1, line_file);
                 break;
             case '!':
                 break;

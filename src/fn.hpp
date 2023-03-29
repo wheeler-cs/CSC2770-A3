@@ -20,7 +20,8 @@
 #include <vector>
 
 void print_line_file (const std::vector <std::string>&);
-bool read_line_file (std::string, std::vector <std::string>&);
-bool write_line_file (std::string, const std::vector <std::string>&);
+bool read_line_file (const std::string&, std::vector <std::string>&);
+bool write_line_file (const std::string&, const std::vector <std::string>&);
+unsigned int edit_line (int, const std::string&, std::vector <std::string>&);
 
 #endif

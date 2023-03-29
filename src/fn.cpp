@@ -56,7 +56,7 @@ void print_line_file (const std::vector <std::string>& v)
  *       from a file, it simply indicates that the file exists.
  * 
  */
-bool read_line_file (std::string f_name, std::vector<std::string>& v)
+bool read_line_file (const std::string& f_name, std::vector<std::string>& v)
 {
     std::ifstream f_load (f_name.c_str());
     std::string temp = "";
@@ -99,7 +99,7 @@ bool read_line_file (std::string f_name, std::vector<std::string>& v)
  * @see fn.hpp
  * 
  */
-bool write_line_file (std::string f_name, const std::vector <std::string>& v)
+bool write_line_file (const std::string& f_name, const std::vector <std::string>& v)
 {
     std::ofstream f_write (f_name.c_str());
 
@@ -114,4 +114,33 @@ bool write_line_file (std::string f_name, const std::vector <std::string>& v)
     }
     else
         return false;
+}
+
+
+/**
+ * @fn edit_line
+ * 
+ * @param lno Line number to be modified.
+ * @param ltxt New text to be inserted at the specified line.
+ * @param v Vector of strings to be modified by the operation.
+ * 
+ * @brief Modifies the text of a given line number.
+ * 
+ * The given line number of the text file is translated to an index number for the vector and
+ * that text is overwritten with specified text. If the line number specified is out of bounds for
+ * the text vector, the new text is just appended to the end.
+ * 
+ * @returns The current size of v.
+ * 
+ * @see fn.hpp
+ * 
+ */
+unsigned int edit_line (int lno, const std::string& ltxt, std::vector <std::string>& v)
+{
+    if (lno > (int) v.size())
+        v.push_back (ltxt);
+    else
+        v[--lno] = ltxt;
+
+    return v.size();
 }
