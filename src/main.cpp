@@ -56,6 +56,9 @@ int main (int argc, char** argv) {
                     std::cerr << "Cannot open " << param_1 << std::endl;
                 break;
             case 's':
+                prompt_parser >> param_1;
+                if (!write_line_file (param_1, line_file))
+                    std::cerr << "Cannot open " << param_1 << std::endl;
                 break;
             case 'e':
                 break;

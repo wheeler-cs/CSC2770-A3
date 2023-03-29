@@ -47,7 +47,7 @@ void print_line_file (const std::vector <std::string>& v)
  * @pre f_name is a valid text file containing lines of text.
  * @post Vector passed in is emptied and contents of file are loaded into it line-by-line.
  * 
- * @returns bool
+ * @returns The success status of the read operation.
  * @retval false An error occurred while trying to open the file specifed (either it doesn't esist
  *         or user does not have suffienct permissions to access it.
  * @retval true The file specified could be found and was able to be opened and closed.
@@ -65,13 +65,51 @@ bool read_line_file (std::string f_name, std::vector<std::string>& v)
     {
         v.clear(); // Empty the vector that will store data
 
-        std::getline (f_load, temp);
+        std::getline (f_load, temp); // If initial getline fails, file is empty
         while (!f_load.eof())
         {
             v.push_back (temp);
             std::getline (f_load, temp);
         }
         f_load.close();
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/**
+ * @fn write_line_file
+ * 
+ * @param f_name The name of the file the vector will be saved to.
+ * @param v The vector of strings to be written to the file.
+ * 
+ * @brief Writes the contents of a string-containing vector to a file, with each element on its own
+ *        line .
+ * 
+ * @pre Vector v is properly initialized and (should) contain strings.
+ * @post Data within the vector v is written out to the file specified.
+ * 
+ * @returns The success status of the write operation.
+ * @retval false A file could not be opened or created for a write operation. This is most likely
+ *         due to file permissions.
+ * @retval true File was successfully opened and the contents of the vector were written to it.
+ * 
+ * @see fn.hpp
+ * 
+ */
+bool write_line_file (std::string f_name, const std::vector <std::string>& v)
+{
+    std::ofstream f_write (f_name.c_str());
+
+    if (f_write.is_open())
+    {
+        // Loop through and print vector to file
+        unsigned int v_size = v.size();
+        for (unsigned int i = 0; i < v_size; i++)
+            f_write << v[i] << '\n';
+        f_write.close();
         return true;
     }
     else
