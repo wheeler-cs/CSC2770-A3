@@ -31,7 +31,7 @@ void print_line_file (const std::vector <std::string>& v)
 
     for (unsigned int i = 0; i < v_size; i++)
     {
-        std::cout << v[i] << '\n';
+        std::cout << (i + 1) << '\t' << v[i] << '\n';
     }
 }
 

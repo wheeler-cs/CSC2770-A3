@@ -62,11 +62,13 @@ int main (int argc, char** argv) {
                     std::cerr << "Cannot open " << param_1 << std::endl;
                 break;
             case 'e':
-                // BUG: Causes a seg. fault. if no parameters are supplied after 'e'
                 prompt_parser >> lno;
                 prompt_parser.get (param_1[0]); // Get the left over ' ' between lno and text
                 std::getline (prompt_parser, param_1);
-                edit_line (lno, param_1, line_file);
+                if (!prompt_parser.fail())
+                    edit_line (lno, param_1, line_file);
+                else
+                    std::cerr << "Missing or malformed parameters for e operation" << std::endl;
                 break;
             case '!':
                 break;
