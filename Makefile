@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-Wall -c
+CFLAGS=-g -Wall -pedantic -c
 
 EXECUTABLE=LineEditor
 

@@ -144,3 +144,75 @@ unsigned int edit_line (int lno, const std::string& ltxt, std::vector <std::stri
 
     return v.size();
 }
+
+
+/**
+ * @fn filter
+ * 
+ * @param lines String-containing vector representing a text file.
+ * @param user_cmd Command supplied by user.
+ * 
+ * 
+ */
+void filter (std::vector <std::string>& lines, const std::string& user_cmd)
+{
+    // Parse and read in line number and Unix command
+    unsigned int lno = 0;
+    std::string unix_cmd = "";
+
+    std::stringstream cmd_parser (user_cmd);
+    cmd_parser >> lno;
+    cmd_parser.get (unix_cmd[0]);
+    std::getline (cmd_parser, unix_cmd);
+
+    // Create two pipes for communication between parent and child
+    int from_parent[2] = {0},
+        to_parent[2] = {0},
+        p_id = 0;
+
+    if (pipe (from_parent) != 0)
+    {
+        std::cerr << "Could not create pipe `from_parent`"
+                  << "\n\tErrno: " << errno;
+    }
+    else if (pipe (to_parent) != 0)
+    {
+        std::cerr << "Could not create pipe `to_parent`"
+                  << "\n\tErrno: " << errno;
+    }
+    // Pipes created successfully, try spawn child process
+    else
+    {
+        //p_id = fork();
+
+        // Current process is the parent
+        if (p_id > 0)
+        {
+            close (from_parent[0]); // Close read end of from_parent
+            close (to_parent[1]);   // Close write end of to_parent
+
+            FILE* descriptor = fdopen (from_parent[1], "w");
+
+            fprintf (descriptor, lines[lno].c_str());
+
+            fclose (descriptor);
+        }
+        // Curent process is the child
+        else if (p_id == 0)
+        {
+
+        }
+        // Something went wrong and a child couldn't be spawned
+        else {
+            std::cerr << "Could not spawn child process"
+                      << "\n\tErrno: " << errno;
+        }
+    }
+
+    // Close pipes created for parent-child pair
+    close (from_parent[0]);
+    close (from_parent[1]);
+    close (to_parent[0]);
+    close (to_parent[1]);    
+
+}
