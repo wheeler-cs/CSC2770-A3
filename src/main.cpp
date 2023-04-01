@@ -71,6 +71,7 @@ int main (int argc, char** argv) {
                     std::cerr << "Missing or malformed parameters for e operation" << std::endl;
                 break;
             case '!':
+                filter (line_file, user_input);
                 break;
             case 'q':
                 std::cout << "Exiting the editor" << std::endl;

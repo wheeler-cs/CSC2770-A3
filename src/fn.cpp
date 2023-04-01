@@ -157,11 +157,18 @@ unsigned int edit_line (int lno, const std::string& ltxt, std::vector <std::stri
 void filter (std::vector <std::string>& lines, const std::string& user_cmd)
 {
     // Parse and read in line number and Unix command
-    unsigned int lno = 0;
+    int lno = 0;
     std::string unix_cmd = "";
 
     std::stringstream cmd_parser (user_cmd);
+
+    // Clear out "! " from buffer
+    cmd_parser.get (unix_cmd[0]);
+    cmd_parser.get (unix_cmd[0]);
+    // Get line number specified and covert to an index by decrementing
     cmd_parser >> lno;
+    lno--;
+    // Clear ' ' from buffer and get rest of command
     cmd_parser.get (unix_cmd[0]);
     std::getline (cmd_parser, unix_cmd);
 
@@ -183,7 +190,7 @@ void filter (std::vector <std::string>& lines, const std::string& user_cmd)
     // Pipes created successfully, try spawn child process
     else
     {
-        //p_id = fork();
+        p_id = fork();
 
         // Current process is the parent
         if (p_id > 0)
@@ -191,16 +198,61 @@ void filter (std::vector <std::string>& lines, const std::string& user_cmd)
             close (from_parent[0]); // Close read end of from_parent
             close (to_parent[1]);   // Close write end of to_parent
 
-            FILE* descriptor = fdopen (from_parent[1], "w");
+            // Write lines to write end of from_parent
+            FILE* write_child = fdopen (from_parent[1], "w");
+            fprintf (write_child, lines[lno].c_str());
+            fclose (write_child);
 
-            fprintf (descriptor, lines[lno].c_str());
+            // Read line from read end of to_parent
+            FILE* read_child = fdopen (to_parent[0], "r");
+            char ln[255];
+            if (fgets (ln, 255, read_child) != NULL)
+            {
+                if (!feof (read_child))
+                {
+                    if (!ferror (read_child))
+                    {
+                        lines[lno] = ln;
+                    }
+                    else
+                    {
+                        std::cerr << "An error occurred while reading from child"
+                                  << "\n\tErrno: " << errno;
+                    }
+                }
+            }
 
-            fclose (descriptor);
+            // Close read descriptor and wait for child to terminate
+            int w_status = 0;
+            fclose (read_child);
+            wait (&w_status);
         }
         // Curent process is the child
         else if (p_id == 0)
         {
+            // Copy file descriptors to stdin/stdout
+            dup2 (from_parent[0], 0);
+            dup2 (to_parent[1], 1);
 
+            // Close pipes
+            close (to_parent[0]);
+            close (to_parent[1]);
+            close (from_parent[0]);
+            close (from_parent[1]);
+
+            std::string a = "/bin/who";
+            char* args[2];
+            args[0] = const_cast <char*> (a.c_str());
+            args[1] = NULL;
+
+            char** e;
+            e[0] = getenv("PATH");
+            e[1] = NULL;
+
+            execve ("/bin/who", args, e);
+
+            // In the event something goes wrong, return 1
+            exit(1);
         }
         // Something went wrong and a child couldn't be spawned
         else {

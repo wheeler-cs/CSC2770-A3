@@ -14,6 +14,7 @@
 #ifndef FN_HPP
 #define FN_HPP
 
+#include <sys/wait.h>
 #include <unistd.h>
 
 #include <fstream>
