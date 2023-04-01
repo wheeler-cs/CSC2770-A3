@@ -158,19 +158,22 @@ void filter (std::vector <std::string>& lines, const std::string& user_cmd)
 {
     // Parse and read in line number and Unix command
     int lno = 0;
-    std::string unix_cmd = "";
+    char buffer_clear = ' ';
+    std::string ucmd = "";
 
     std::stringstream cmd_parser (user_cmd);
 
     // Clear out "! " from buffer
-    cmd_parser.get (unix_cmd[0]);
-    cmd_parser.get (unix_cmd[0]);
+    cmd_parser.get (buffer_clear);
+    cmd_parser.get (buffer_clear);
     // Get line number specified and covert to an index by decrementing
     cmd_parser >> lno;
     lno--;
     // Clear ' ' from buffer and get rest of command
-    cmd_parser.get (unix_cmd[0]);
-    std::getline (cmd_parser, unix_cmd);
+    cmd_parser.get (buffer_clear);
+    std::getline (cmd_parser, ucmd);
+    //ucmd.push_back ('"');
+    //ucmd.insert (ucmd.begin(), '"');
 
     // Create two pipes for communication between parent and child
     int from_parent[2] = {0},
@@ -213,6 +216,11 @@ void filter (std::vector <std::string>& lines, const std::string& user_cmd)
                     if (!ferror (read_child))
                     {
                         lines[lno] = ln;
+                        // Remove a trailing newline if it exists
+                        if (lines[lno][lines[lno].size() - 1] == '\n')
+                        {
+                            lines[lno].pop_back();
+                        }
                     }
                     else
                     {
@@ -240,18 +248,28 @@ void filter (std::vector <std::string>& lines, const std::string& user_cmd)
             close (from_parent[0]);
             close (from_parent[1]);
 
-            std::string a = "/bin/who";
-            char* args[2];
-            args[0] = const_cast <char*> (a.c_str());
-            args[1] = NULL;
+            // Setup argv array for new process
+            char** child_argv = new char*[4]();
+            child_argv[0] = const_cast <char*> ("/bin/sh");
+            child_argv[1] = const_cast <char*> ("-c");
+            child_argv[2] = const_cast <char*> (ucmd.c_str());
+            child_argv[3] = 0;    // Null-terminate the argv vector
 
-            char** e;
-            e[0] = getenv("PATH");
-            e[1] = NULL;
+            // Setup PATH variable for child process to parent's value
+            std::string temp = "PATH=";
+            temp += getenv ("PATH");
+            char* env_array[2];
+            env_array[0] = const_cast <char*> (temp.c_str());
+            env_array[1] = NULL;
 
-            execve ("/bin/who", args, e);
+            // Execute external command
+            execve (child_argv[0], child_argv, env_array);
 
-            // In the event something goes wrong, return 1
+
+            // This code shouldn't be executed, unless the external program couldn't be executed
+            std::cerr << "Could not execute external program"
+                      << "\n\tErrono: " << errno;
+            delete[] child_argv;
             exit(1);
         }
         // Something went wrong and a child couldn't be spawned
