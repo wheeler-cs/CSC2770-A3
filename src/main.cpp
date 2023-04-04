@@ -25,7 +25,7 @@ int main (int argc, char** argv) {
     std::stringstream prompt_parser;
 
     // Variables to hold the operation and its parameter
-    char operation = ' ';
+    char operation = ' ', space_check = ' ';
     std::string param_1 = "",   // Normally holds file names for read/write ops
                 param_2 = "";   // Holds text for replacement/insertion ops
 
@@ -45,6 +45,21 @@ int main (int argc, char** argv) {
         // Put user input into buffer for parsing
         prompt_parser << user_input;
         prompt_parser >> operation;
+
+        // Check for if a space comes after for certain operations
+        prompt_parser.get (space_check);
+        switch (operation)
+        {
+            case 'r':
+            case 's':
+            case 'e':
+            case '!':
+                if (space_check != ' ')
+                {
+                    std::cerr << "Operation requires a space between it and arguments" << std::endl;
+                    operation = ' ';
+                }
+        }
 
         switch (operation)
         {
@@ -71,13 +86,18 @@ int main (int argc, char** argv) {
                     std::cerr << "Missing or malformed parameters for e operation" << std::endl;
                 break;
             case '!':
+                // BUG: Causes seg fault if missing arguments
                 filter (line_file, user_input);
                 break;
             case 'q':
                 std::cout << "Exiting the editor" << std::endl;
                 exit(0);
-            default:
+            case ' ':   // Kinda a hacky way to get around printing more output
                 break;
+            default:
+                prompt_parser.clear();
+                std::getline (prompt_parser, param_1);
+                std::cerr << "Unable to resolve command " << param_1 << std::endl;
         }
 
         // Reset buffer for next read
@@ -86,4 +106,6 @@ int main (int argc, char** argv) {
 
     }
     while (!feof (stdin));
+
+    return 0;
 }
