@@ -168,17 +168,37 @@ void filter (std::vector <std::string>& lines, const std::string& user_cmd)
     char buffer_clear = ' ';
     std::string ucmd = "";
 
+    // Setup string stream to handle parsing the more complex command
     std::stringstream cmd_parser (user_cmd);
 
     // Clear out "! " from buffer
     cmd_parser.get (buffer_clear);
     cmd_parser.get (buffer_clear);
-    // Get line number specified and covert to an index by decrementing
+
+
+    // Get line number specified and perform check
     cmd_parser >> lno;
-    lno--;
+    // Line specified goes out of scope for file
+    if ((lno >= (int) lines.size()) || (lno < 0))
+    {
+        std::cerr << "Line specified goes out of scope of file" << std::endl;
+        return;
+    }
+    // Line number is valid, decrement value to convert from 1-indexed to 0-indexed number
+    else
+    {
+        lno--;
+    }
+
     // Clear ' ' from buffer and get rest of command
     cmd_parser.get (buffer_clear);
     std::getline (cmd_parser, ucmd);
+
+    if (ucmd.size() == 0)
+    {
+        std::cerr << "Missing command to execute on string" << std::endl;
+        return;
+    }
 
     // Create two pipes for communication between parent and child
     int from_parent[2] = {0},

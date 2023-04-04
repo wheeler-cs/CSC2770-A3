@@ -86,7 +86,6 @@ int main (int argc, char** argv) {
                     std::cerr << "Missing or malformed parameters for e operation" << std::endl;
                 break;
             case '!':
-                // BUG: Causes seg fault if missing arguments
                 filter (line_file, user_input);
                 break;
             case 'q':
