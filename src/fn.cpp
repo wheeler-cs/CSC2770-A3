@@ -152,6 +152,13 @@ unsigned int edit_line (int lno, const std::string& ltxt, std::vector <std::stri
  * @param lines String-containing vector representing a text file.
  * @param user_cmd Command supplied by user.
  * 
+ * @brief Executes an external program by forking a child process from parent to modify a single
+ *        line of text in the file.
+ * 
+ * Function creates a child process and launches an external program using Unix system calls. Pipes
+ * are setup such that the spawned process reroutes output to the parent process. The spawned
+ * process takes in a line of text, executes a terminal command, and sends its output back to the
+ * main program.
  * 
  */
 void filter (std::vector <std::string>& lines, const std::string& user_cmd)
@@ -172,8 +179,6 @@ void filter (std::vector <std::string>& lines, const std::string& user_cmd)
     // Clear ' ' from buffer and get rest of command
     cmd_parser.get (buffer_clear);
     std::getline (cmd_parser, ucmd);
-    //ucmd.push_back ('"');
-    //ucmd.insert (ucmd.begin(), '"');
 
     // Create two pipes for communication between parent and child
     int from_parent[2] = {0},
@@ -203,11 +208,28 @@ void filter (std::vector <std::string>& lines, const std::string& user_cmd)
 
             // Write lines to write end of from_parent
             FILE* write_child = fdopen (from_parent[1], "w");
+            if (write_child == NULL)    // Write file descriptor couldn't be opened
+            {
+                std::cerr << "Could not open file descriptor for parent to write to child"
+                          << "\n\tErrno: " << errno;
+                close (from_parent[1]);
+                close (to_parent[0]);
+                return;
+            }
             fprintf (write_child, lines[lno].c_str());
             fclose (write_child);
 
             // Read line from read end of to_parent
             FILE* read_child = fdopen (to_parent[0], "r");
+            if (read_child == NULL)  // Read file descriptor couldn't be opened
+            {
+                std::cerr << "Could not open file descriptor for parent to read from child"
+                          << "\n\tErrno: " << errno;
+                close (from_parent[1]);
+                close (to_parent[0]);
+                return;
+            }
+
             char ln[255];
             if (fgets (ln, 255, read_child) != NULL)
             {
@@ -216,7 +238,7 @@ void filter (std::vector <std::string>& lines, const std::string& user_cmd)
                     if (!ferror (read_child))
                     {
                         lines[lno] = ln;
-                        // Remove a trailing newline if it exists
+                        // Some commands have a trailing newline, which isn't needed; pop it off
                         if (lines[lno][lines[lno].size() - 1] == '\n')
                         {
                             lines[lno].pop_back();
@@ -253,7 +275,7 @@ void filter (std::vector <std::string>& lines, const std::string& user_cmd)
             child_argv[0] = const_cast <char*> ("/bin/sh");
             child_argv[1] = const_cast <char*> ("-c");
             child_argv[2] = const_cast <char*> (ucmd.c_str());
-            child_argv[3] = 0;    // Null-terminate the argv vector
+            child_argv[3] = NULL;    // Null-terminate the argv vector
 
             // Setup PATH variable for child process to parent's value
             std::string temp = "PATH=";
@@ -265,10 +287,9 @@ void filter (std::vector <std::string>& lines, const std::string& user_cmd)
             // Execute external command
             execve (child_argv[0], child_argv, env_array);
 
-
             // This code shouldn't be executed, unless the external program couldn't be executed
             std::cerr << "Could not execute external program"
-                      << "\n\tErrono: " << errno;
+                      << "\n\tErrno: " << errno;
             delete[] child_argv;
             exit(1);
         }
@@ -284,5 +305,4 @@ void filter (std::vector <std::string>& lines, const std::string& user_cmd)
     close (from_parent[1]);
     close (to_parent[0]);
     close (to_parent[1]);    
-
 }
