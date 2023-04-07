@@ -4,7 +4,7 @@
  * 
  * @brief Main driving file of the program.
  * 
- * @see fn.hpp fn.cpp
+ * @see edlin.hpp edlin.cpp
  * 
  */
 
@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 
-#include "fn.hpp"
+#include "edlin.hpp"
 
 int main (int argc, char** argv) {
 // Note: lines is a vector of strings

@@ -1,5 +1,5 @@
 /**
- * @file fn.cpp
+ * @file edlin.cpp
  * @author Drew Wheeler
  * 
  * @brief Contains function definitions for operation-handling procedures in the program.
@@ -7,11 +7,11 @@
  * Functionality for each of the program's features has been broken down into individual functions
  * that are called as needed. This file contains the definitions of those functions.
  * 
- * @see fn.hpp main.cpp
+ * @see edlin.hpp main.cpp
  * 
  */
 
-#include "fn.hpp"
+#include "edlin.hpp"
 
 
 /**
@@ -249,7 +249,6 @@ void filter (std::vector <std::string>& lines, const std::string& user_cmd)
                 close (to_parent[0]);
                 return;
             }
-
             char ln[255];
             if (fgets (ln, 255, read_child) != NULL)
             {
@@ -281,8 +280,18 @@ void filter (std::vector <std::string>& lines, const std::string& user_cmd)
         else if (p_id == 0)
         {
             // Copy file descriptors to stdin/stdout
-            dup2 (from_parent[0], 0);
-            dup2 (to_parent[1], 1);
+            if (dup2 (from_parent[0], 0) == -1)
+            {
+                std::cerr << "Unable to duplicate from_parent to stdin"
+			  << "\nErrno: " << errno << std::endl;
+		return;
+            }
+	    if (dup2 (to_parent[1], 1) == -1)
+            {
+                std::cerr << "Unable to duplicate to_parent to stdout"
+			  << "\nErrno: " << errno << std::endl;
+		return;
+            }
 
             // Close pipes
             close (to_parent[0]);

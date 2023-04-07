@@ -1,5 +1,5 @@
 /**
- * @file fn.hpp
+ * @file edlin.hpp
  * @author Drew Wheeler
  * 
  * @brief Contains function prototypes to extend functionality of program.
@@ -7,12 +7,12 @@
  * Each individual operation the line editor is capable of is handled through a function call, and
  * passed in the parameters that are needed.
  * 
- * @see fn.cpp
+ * @see edlin.cpp
  * 
  */
 
-#ifndef FN_HPP
-#define FN_HPP
+#ifndef EDLIN_HPP
+#define EDLIN_HPP
 
 #include <sys/wait.h>
 #include <unistd.h>

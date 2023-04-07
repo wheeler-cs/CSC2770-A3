@@ -1,18 +1,18 @@
 CC=g++
 CFLAGS=-g -Wall -pedantic -c
 
-EXECUTABLE=LineEditor
+EXECUTABLE=edlin
 
 # Compile commands
-all: build/main.o build/fn.o
+all: build/main.o build/edlin.o
 	$(CC) $^ -o build/$(EXECUTABLE)
 
 main.o: build/main.o
 build/main.o: src/main.cpp
 	$(CC) $(CFLAGS) $< -o $@
 
-fn.o: build/fn.o
-build/fn.o: src/fn.cpp src/fn.hpp
+edlin.o: build/edlin.o
+build/edlin.o: src/edlin.cpp src/edlin.hpp
 	$(CC) $(CFLAGS) $< -o $@
 
 
